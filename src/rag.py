@@ -1,15 +1,13 @@
 from langchain.load import loads, dumps
-import pickle
-# from dotenv import load_dotenv
-
-# load_dotenv('.env')
+from langchain_community.embeddings.sentence_transformer import (
+    SentenceTransformerEmbeddings,
+)
 
 import pandas as pd
 from langchain_core.output_parsers import StrOutputParser
 from langchain_openai import ChatOpenAI
 from operator import itemgetter
 
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import ChatOpenAI
 
 from langchain_chroma import Chroma
@@ -19,9 +17,8 @@ from langchain.prompts import ChatPromptTemplate
 class Rag:
     def __init__(self):
         self.llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, max_tokens = 1000)
-        with open("./artifacts/embedding_function.pkl", "rb") as file:
-            self.embedding_function = pickle.load(file)
-        self.db = Chroma(embedding_function=self.embedding_function, persist_directory="./artifacts/chroma_db")
+        embedding_function = SentenceTransformerEmbeddings(model_name="DeepPavlov/rubert-base-cased-sentence", model_kwargs={'device': 'cpu'})
+        self.db = Chroma(embedding_function=embedding_function, persist_directory="../../artifacts/chroma_db")
         self.retriever = self.db.as_retriever()
 
         template = """You are an AI language model assistant. Your task is to generate five 
